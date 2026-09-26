@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dělení mnohočlenů</title>
+<link rel="icon" type="image/svg+xml" href="logo-sj.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FBF9F4;
+    --bg-line: rgba(31,42,36,0.05);
+    --surface: #FFFFFF;
+    --surface-2: #F3F0E7;
+    --ink: #1F2A24;
+    --ink-soft: #5B655D;
+    --accent: #2B6E63;
+    --accent-soft: rgba(43,110,99,0.12);
+    --warn: #B5541F;
+    --correct: #2F7D46;
+    --correct-bg: rgba(47,125,70,0.12);
+    --incorrect: #B23A34;
+    --incorrect-bg: rgba(178,58,52,0.12);
+    --border: #DDD7C8;
+    --shadow: rgba(31,42,36,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16302B;
+      --bg-line: rgba(237,239,234,0.045);
+      --surface: #1E3B34;
+      --surface-2: #234840;
+      --ink: #EDEFEA;
+      --ink-soft: #A9BDB4;
+      --accent: #F2C14E;
+      --accent-soft: rgba(242,193,78,0.16);
+      --warn: #E8975A;
+      --correct: #8FD19E;
+      --correct-bg: rgba(143,209,158,0.16);
+      --incorrect: #F2867A;
+      --incorrect-bg: rgba(242,134,122,0.16);
+      --border: #2E4F46;
+      --shadow: rgba(0,0,0,0.28);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16302B;
+    --bg-line: rgba(237,239,234,0.045);
+    --surface: #1E3B34;
+    --surface-2: #234840;
+    --ink: #EDEFEA;
+    --ink-soft: #A9BDB4;
+    --accent: #F2C14E;
+    --accent-soft: rgba(242,193,78,0.16);
+    --warn: #E8975A;
+    --correct: #8FD19E;
+    --correct-bg: rgba(143,209,158,0.16);
+    --incorrect: #F2867A;
+    --incorrect-bg: rgba(242,134,122,0.16);
+    --border: #2E4F46;
+    --shadow: rgba(0,0,0,0.28);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background:
+      repeating-linear-gradient(180deg, var(--bg-line) 0, var(--bg-line) 1px, transparent 1px, transparent 34px),
+      var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px 64px;
+    transition: background-color .3s ease, color .3s ease;
+  }
+
+  .page { width: 100%; max-width: 1400px; }
+
+  header { margin-bottom: 22px; }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand svg { width: 64px; height: 64px; flex-shrink: 0; }
+  .brand-text { min-width: 0; }
+  h1 {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-weight: 600;
+    font-size: 2.4rem;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  .sub {
+    color: var(--ink-soft);
+    font-size: 1.3rem;
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  .scoreboard {
+    display: flex;
+    gap: 24px;
+    margin-top: 18px;
+    font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+  }
+  .scoreboard b { color: var(--ink); font-weight: 600; }
+
+  .difficulty {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .diff-btn {
+    font-family: inherit;
+    font-size: 1.1rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+    border-radius: 24px;
+    padding: 9px 22px;
+    cursor: pointer;
+    transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+  }
+  .diff-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .diff-btn.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  #resetBtn { margin-left: auto; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 40px 44px;
+    box-shadow: 0 1px 2px var(--shadow);
+    transition: background-color .3s ease, border-color .3s ease;
+  }
+
+  .problem {
+    font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 2.2rem;
+    text-align: center;
+    padding: 20px 4px 34px;
+    line-height: 1.5;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .problem .op { color: var(--accent); margin: 0 10px; }
+  .problem .eq { color: var(--ink-soft); margin-left: 10px; }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 420px) {
+    .options { grid-template-columns: 1fr; }
+  }
+
+  .opt {
+    font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 1.5rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 22px 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s ease, background-color .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+    color: var(--correct);
+    font-weight: 600;
+  }
+  .opt.incorrect {
+    background: var(--incorrect-bg);
+    border-color: var(--incorrect);
+    color: var(--incorrect);
+  }
+
+  .feedback {
+    min-height: 26px;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+  }
+  .feedback.is-correct { color: var(--correct); }
+  .feedback.is-incorrect { color: var(--incorrect); }
+
+  .actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+  }
+  button.action {
+    font-family: inherit;
+    font-size: 1.15rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--ink);
+    border-radius: 9px;
+    padding: 13px 22px;
+    cursor: pointer;
+  }
+  button.action:hover { border-color: var(--accent); color: var(--accent); }
+  button.action.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--surface);
+  }
+  button.action.primary:hover { opacity: 0.9; color: var(--surface); }
+  button.action:focus-visible, .opt:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .steps {
+    margin-top: 26px;
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+    display: none;
+  }
+  .steps.visible { display: block; }
+  .step {
+    font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 1.25rem;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .step:last-child { border-bottom: none; }
+  .step .label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink-soft);
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+  .step .line { margin: 4px 0; }
+  .step .line.sub { color: var(--warn); }
+  .step .line.res { color: var(--ink); font-weight: 600; }
+
+  .result-line {
+    font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 1.3rem;
+  }
+
+  footer.hint {
+    margin-top: 18px;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+
+  sup { font-size: 0.7em; }
+
+  /* číslice stejně široké, nula bez tečky/přeškrtnutí */
+  .scoreboard, .problem, .opt, .step, .result-line {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "zero" 0;
+  }
+
+  /* 3D tlačítka: spodní hrana + stín, při stisku se tlačítko zmáčkne */
+  :root {
+    --edge: #C4BCA6;
+    --gloss: rgba(255,255,255,0.55);
+    --accent-edge: #1B4A42;
+    --press-shadow: rgba(31,42,36,0.22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --edge: #0E2320;
+      --gloss: rgba(255,255,255,0.10);
+      --accent-edge: #A67F1E;
+      --press-shadow: rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --edge: #0E2320;
+    --gloss: rgba(255,255,255,0.10);
+    --accent-edge: #A67F1E;
+    --press-shadow: rgba(0,0,0,0.5);
+  }
+
+  .opt, button.action, .diff-btn {
+    --lift: 5px;
+    background-image: linear-gradient(180deg, var(--gloss) 0%, transparent 55%);
+    box-shadow: 0 var(--lift) 0 var(--edge), 0 calc(var(--lift) + 4px) 10px var(--press-shadow);
+    transform: translateY(0);
+    transition: transform .08s ease, box-shadow .08s ease, border-color .15s ease, background-color .15s ease;
+  }
+  .diff-btn { --lift: 3px; }
+  button.action { --lift: 4px; }
+  button.action.primary { --edge: var(--accent-edge); }
+  .diff-btn.active { --edge: var(--accent-edge); }
+
+  .opt:hover:not(:disabled), button.action:hover, .diff-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 calc(var(--lift) + 2px) 0 var(--edge), 0 calc(var(--lift) + 8px) 14px var(--press-shadow);
+  }
+  .opt:active:not(:disabled), button.action:active:not(:disabled), .diff-btn:active {
+    transform: translateY(calc(var(--lift) - 1px));
+    box-shadow: 0 1px 0 var(--edge), 0 2px 4px var(--press-shadow);
+  }
+  /* zodpovězené / vypnuté tlačítko zůstane „zapuštěné" */
+  .opt:disabled, button.action:disabled {
+    transform: translateY(calc(var(--lift) - 2px));
+    box-shadow: 0 2px 0 var(--edge), 0 3px 6px var(--press-shadow);
+  }
+  .opt.correct { --edge: var(--correct); }
+  .opt.incorrect { --edge: var(--incorrect); }
+  .opt.correct, .opt.incorrect { background-image: none; }
+  .options, .actions, .difficulty { padding-bottom: 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    .opt, button.action, .diff-btn { transition: none; }
+  }
+
+  /* správná odpověď se po kliknutí otočí dokola */
+  .options { perspective: 900px; }
+  .opt.correct {
+    animation: flipCorrect 1.8s cubic-bezier(.45,.05,.35,1) both;
+    transform-style: preserve-3d;
+  }
+  @keyframes flipCorrect {
+    0%   { transform: translateY(calc(var(--lift) - 2px)) rotateX(0deg) scale(1); }
+    50%  { transform: translateY(-6px) rotateX(180deg) scale(1.06); }
+    100% { transform: translateY(calc(var(--lift) - 2px)) rotateX(360deg) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .opt.correct { animation: none; }
+  }
+
+  /* výsledek vždy v jednom řádku, na úzkém displeji se písmo zmenší */
+  .opt { white-space: nowrap; font-size: clamp(1rem, 4.5vw, 1.5rem); padding-left: 4px; padding-right: 4px; }
+
+  /* mobil */
+  .difficulty { flex-wrap: wrap; }
+  .problem.wrap { white-space: normal; }
+  @media (max-width: 600px) {
+    body { padding: 20px 12px 40px; }
+    .brand svg { width: 48px; height: 48px; }
+    h1 { font-size: 1.9rem; }
+    .sub { font-size: 1.1rem; }
+    .card { padding: 22px 16px; }
+    .problem { padding: 10px 0 24px; }
+    .step, .result-line { font-size: 1.05rem; overflow-wrap: anywhere; }
+  }
+  body p.kvinta { margin: 0 0 4px; max-width: none; color: #2F6FB5; font-size: 1.05rem; font-weight: 600; letter-spacing: .02em; }
+  :root[data-theme="dark"] .kvinta { color: #8CBDF2; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kvinta { color: #8CBDF2; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logo SJ">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c6df2"/>
+            <stop offset="100%" stop-color="#4338ca"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="url(#g)"/>
+        <path d="M14 40 Q32 18 50 40" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round"/>
+        <text x="32" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" fill="#ffffff" text-anchor="middle">SJ</text>
+      </svg>
+      <div class="brand-text">
+        <p class="kvinta">Pro kvintu snadno a moderně</p>
+        <h1>Dělení mnohočlenů</h1>
+        <p class="sub">Vyberte správný podíl. Pak si nechte ukázat výpočet krok za krokem.</p>
+      </div>
+    </div>
+    <div class="scoreboard">
+      <span>Příklad: <b id="exNum">1</b></span>
+      <span>Správně: <b id="scoreNum">0</b> / <b id="totalNum">0</b></span>
+    </div>
+    <div class="difficulty" id="difficulty">
+      <button class="diff-btn active" data-level="easy" type="button">Lehčí</button>
+      <button class="diff-btn" data-level="hard" type="button">Těžší</button>
+      <button class="diff-btn" id="resetBtn" type="button">Vynulovat</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="problem" id="problem"></div>
+
+    <div class="options" id="options"></div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="actions">
+      <button class="action" id="stepsBtn">Zobrazit postup</button>
+      <button class="action primary" id="nextBtn">Další příklad</button>
+    </div>
+
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <footer class="hint">Podíl vzniká dělením mnohočlenu (dividendu) mnohočlenem (dělitelem) beze zbytku.</footer>
+</div>
+
+<script>
+(function () {
+  const problemEl = document.getElementById('problem');
+  const optionsEl = document.getElementById('options');
+  const feedbackEl = document.getElementById('feedback');
+  const stepsEl = document.getElementById('steps');
+  const stepsBtn = document.getElementById('stepsBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const exNumEl = document.getElementById('exNum');
+  const scoreNumEl = document.getElementById('scoreNum');
+  const totalNumEl = document.getElementById('totalNum');
+
+  let exampleCount = 0;
+  let correctCount = 0;
+  let answeredCount = 0;
+  let current = null;
+  let answered = false;
+  let difficulty = 'easy';
+
+  function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  function randNonZero(min, max) {
+    let v = 0;
+    while (v === 0) v = randInt(min, max);
+    return v;
+  }
+  function cloneArr(a) { return a.slice(); }
+  function arrEqual(a, b) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function polyMultiply(a, b) {
+    const res = new Array(a.length + b.length - 1).fill(0);
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < b.length; j++) {
+        res[i + j] += a[i] * b[j];
+      }
+    }
+    return res;
+  }
+
+  // Format a coefficient array (highest degree first) into HTML math string
+  function formatPoly(coeffs) {
+    const deg = coeffs.length - 1;
+    let html = '';
+    let first = true;
+    for (let i = 0; i < coeffs.length; i++) {
+      const c = coeffs[i];
+      if (c === 0) continue;
+      const d = deg - i;
+      const absC = Math.abs(c);
+      let coefPart = '';
+      if (d === 0) coefPart = String(absC);
+      else if (absC !== 1) coefPart = String(absC);
+      let varPart = '';
+      if (d === 1) varPart = 'x';
+      else if (d > 1) varPart = 'x<sup>' + d + '</sup>';
+      const term = coefPart + varPart;
+      if (first) {
+        html += (c < 0 ? '-' : '') + term;
+        first = false;
+      } else {
+        html += (c < 0 ? ' − ' : ' + ') + term;
+      }
+    }
+    if (html === '') html = '0';
+    return html;
+  }
+
+  function polyDivide(dividend, divisor) {
+    let rem = dividend.slice();
+    const divDeg = divisor.length - 1;
+    const divLead = divisor[0];
+    const steps = [];
+    const quotient = [];
+    while (rem.length - 1 >= divDeg && !(rem.length === 1 && rem[0] === 0)) {
+      const remDeg = rem.length - 1;
+      const coef = rem[0] / divLead;
+      quotient.push(coef);
+      const shift = remDeg - divDeg;
+      const sub = new Array(divisor.length).fill(0);
+      for (let i = 0; i < divisor.length; i++) sub[i] = divisor[i] * coef;
+      for (let i = 0; i < shift; i++) sub.push(0);
+      const remBefore = rem.slice();
+      const newRemFull = rem.map((v, i) => v - (sub[i] || 0));
+      steps.push({
+        remBefore: remBefore,
+        termCoef: coef,
+        termDeg: shift,
+        sub: sub.slice(),
+        remAfterFull: newRemFull.slice()
+      });
+      let newRem = newRemFull.slice();
+      while (newRem.length > 1 && newRem[0] === 0) newRem.shift();
+      rem = newRem;
+    }
+    return { quotient, remainder: rem, steps };
+  }
+
+  function makeDistractors(correct) {
+    const variants = [];
+    function tryAdd(v) {
+      if (!arrEqual(v, correct) && !variants.some(x => arrEqual(x, v))) variants.push(v);
+    }
+    for (let i = 0; i < correct.length; i++) {
+      if (correct[i] !== 0) {
+        const v = cloneArr(correct); v[i] = -v[i]; tryAdd(v);
+      }
+    }
+    for (let i = 0; i < correct.length; i++) {
+      for (const d of [1, -1, 2, -2]) {
+        const v = cloneArr(correct); v[i] += d; tryAdd(v);
+      }
+    }
+    for (let i = 0; i < correct.length - 1; i++) {
+      const v = cloneArr(correct);
+      const t = v[i]; v[i] = v[i + 1]; v[i + 1] = t;
+      tryAdd(v);
+    }
+    shuffle(variants);
+    return variants.slice(0, 3);
+  }
+
+  function generateProblem() {
+    let divisor, quotientDeg, coefRange;
+
+    if (difficulty === 'hard') {
+      const divisorDeg = randInt(1, 2);
+      quotientDeg = randInt(2, 3);
+      coefRange = 6;
+      if (divisorDeg === 1) {
+        divisor = [randNonZero(-3, 3), randInt(-6, 6)];
+      } else {
+        divisor = [randNonZero(-2, 2), randInt(-5, 5), randInt(-5, 5)];
+      }
+    } else {
+      quotientDeg = randInt(1, 2);
+      coefRange = 4;
+      divisor = [randInt(0, 1) === 0 ? 1 : -1, randInt(-4, 4)];
+    }
+
+    const quotient = [randNonZero(-coefRange, coefRange)];
+    for (let i = 1; i <= quotientDeg; i++) quotient.push(randInt(-coefRange, coefRange));
+    const dividend = polyMultiply(quotient, divisor);
+
+    const distractors = makeDistractors(quotient);
+    const options = shuffle([quotient, ...distractors]);
+
+    return { dividend, divisor, quotient, options };
+  }
+
+  function fitProblemText() {
+    const maxSize = 44;
+    const minSize = 18;
+    let size = maxSize;
+    problemEl.classList.remove('wrap');
+    problemEl.style.fontSize = size + 'px';
+    while (problemEl.scrollWidth > problemEl.clientWidth && size > minSize) {
+      size -= 1;
+      problemEl.style.fontSize = size + 'px';
+    }
+    // ani nejmenší písmo nestačí (úzký mobil) → příklad se zalomí na víc řádků
+    if (problemEl.scrollWidth > problemEl.clientWidth) {
+      problemEl.classList.add('wrap');
+      problemEl.style.fontSize = '22px';
+    }
+  }
+  window.addEventListener('resize', () => { if (current) fitProblemText(); });
+  if (document.fonts) document.fonts.ready.then(() => { if (current) fitProblemText(); });
+
+  function renderProblem() {
+    current = generateProblem();
+    answered = false;
+
+    problemEl.innerHTML =
+      '(' + formatPoly(current.dividend) + ')' +
+      '<span class="op">:</span>' +
+      '(' + formatPoly(current.divisor) + ')' +
+      '<span class="eq">= ?</span>';
+    fitProblemText();
+
+    optionsEl.innerHTML = '';
+    current.options.forEach((opt) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = formatPoly(opt);
+      btn.addEventListener('click', () => onAnswer(opt, btn));
+      optionsEl.appendChild(btn);
+    });
+
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+    stepsEl.classList.remove('visible');
+    stepsEl.innerHTML = '';
+    stepsBtn.disabled = false;
+
+    exampleCount += 1;
+    exNumEl.textContent = exampleCount;
+  }
+
+  function onAnswer(chosen, btnEl) {
+    if (answered) return;
+    answered = true;
+    answeredCount += 1;
+    totalNumEl.textContent = answeredCount;
+
+    const isCorrect = arrEqual(chosen, current.quotient);
+    const buttons = Array.from(optionsEl.querySelectorAll('.opt'));
+    buttons.forEach((b) => (b.disabled = true));
+
+    buttons.forEach((b) => {
+      // re-derive which option this button represents by matching rendered html
+      if (b.innerHTML === formatPoly(current.quotient)) {
+        b.classList.add('correct');
+      }
+    });
+
+    if (isCorrect) {
+      correctCount += 1;
+      feedbackEl.textContent = 'Správně.';
+      feedbackEl.className = 'feedback is-correct';
+    } else {
+      btnEl.classList.add('incorrect');
+      feedbackEl.textContent = 'Není to ono. Správný podíl je zvýrazněný zeleně.';
+      feedbackEl.className = 'feedback is-incorrect';
+    }
+
+    scoreNumEl.textContent = correctCount;
+  }
+
+  function renderSteps() {
+    const { steps, remainder } = polyDivide(current.dividend, current.divisor);
+    stepsEl.innerHTML = '';
+
+    steps.forEach((s, idx) => {
+      const div = document.createElement('div');
+      div.className = 'step';
+
+      const termLabel = (s.termCoef < 0 ? '-' : '') +
+        (Math.abs(s.termCoef) === 1 && s.termDeg > 0 ? '' : Math.abs(s.termCoef)) +
+        (s.termDeg === 1 ? 'x' : s.termDeg > 1 ? 'x<sup>' + s.termDeg + '</sup>' : '');
+
+      div.innerHTML =
+        '<div class="label">Krok ' + (idx + 1) + '</div>' +
+        '<div class="line">Zbytek: ' + formatPoly(s.remBefore) + '</div>' +
+        '<div class="line">Vedoucí členy: ' + formatPoly([s.remBefore[0]]) +
+          ' &nbsp;:&nbsp; ' + formatPoly([current.divisor[0]]) +
+          ' &nbsp;=&nbsp; ' + termLabel + '</div>' +
+        '<div class="line sub">Odečítáme: ' + termLabel + ' · (' + formatPoly(current.divisor) + ') = ' + formatPoly(s.sub) + '</div>' +
+        '<div class="line res">Nový zbytek: ' + formatPoly(s.remAfterFull) + '</div>';
+
+      stepsEl.appendChild(div);
+    });
+
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'result-line';
+    resultDiv.innerHTML =
+      'Podíl: <b>' + formatPoly(current.quotient) + '</b>' +
+      (remainder.length === 1 && remainder[0] === 0
+        ? ''
+        : ' &nbsp; Zbytek: ' + formatPoly(remainder));
+    stepsEl.appendChild(resultDiv);
+
+    stepsEl.classList.add('visible');
+    stepsBtn.disabled = true;
+  }
+
+  stepsBtn.addEventListener('click', renderSteps);
+  nextBtn.addEventListener('click', renderProblem);
+
+  const diffButtons = Array.from(document.querySelectorAll('.diff-btn[data-level]'));
+  diffButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.level === difficulty) return;
+      difficulty = btn.dataset.level;
+      diffButtons.forEach((b) => b.classList.toggle('active', b === btn));
+      renderProblem();
+    });
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    exampleCount = 0;
+    correctCount = 0;
+    answeredCount = 0;
+    totalNumEl.textContent = '0';
+    scoreNumEl.textContent = '0';
+    renderProblem();
+  });
+
+  renderProblem();
+})();
+</script>
+</body>
+</html>
