@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="cs">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algebra: základní pojmy</title>
+<style>
+:root{
+  --bg:#EAF0F6;
+  --grid-line:#D2E0EE;
+  --surface:#FFFFFF;
+  --surface-2:#F4F8FC;
+  --ink:#16202B;
+  --muted:#5B6B7C;
+  --accent:#D9631E;
+  --accent-ink:#7A3406;
+  --back:#1F3A5F;
+  --back-2:#284A75;
+  --back-text:#F3F0E7;
+  --ok:#2E7D5B;
+  --ok-bg:#E4F4EC;
+  --ring:#B9CBDD;
+  --select:#6FA8DC;
+  --select-ink:#0B2947;
+  --shadow: 0 1px 2px rgba(22,32,43,.06), 0 6px 16px rgba(22,32,43,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1720;
+    --grid-line:#1C2735;
+    --surface:#182330;
+    --surface-2:#131C27;
+    --ink:#EDF2F7;
+    --muted:#93A4B8;
+    --accent:#F08A4B;
+    --accent-ink:#FFD9BB;
+    --back:#0B1826;
+    --back-2:#13263C;
+    --back-text:#F3EFE6;
+    --ok:#6FCF9A;
+    --ok-bg:#173427;
+    --ring:#2C3E52;
+    --select:#7AB4E8;
+    --select-ink:#08192B;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1720;
+  --grid-line:#1C2735;
+  --surface:#182330;
+  --surface-2:#131C27;
+  --ink:#EDF2F7;
+  --muted:#93A4B8;
+  --accent:#F08A4B;
+  --accent-ink:#FFD9BB;
+  --back:#0B1826;
+  --back-2:#13263C;
+  --back-text:#F3EFE6;
+  --ok:#6FCF9A;
+  --ok-bg:#173427;
+  --ring:#2C3E52;
+  --select:#7AB4E8;
+  --select-ink:#08192B;
+  --shadow: 0 1px 2px rgba(0,0,0,.35), 0 10px 24px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  padding-inline:20px;
+  padding-block:28px 40px;
+  background:
+    linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 42px,
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/42px 100%,
+    var(--bg);
+  color:var(--ink);
+  font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+}
+.wrap{max-width:1080px;margin:0 auto}
+
+header.page{
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px 28px;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:22px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.brand svg{
+  width:48px;
+  height:48px;
+  flex-shrink:0;
+  border-radius:50%;
+  box-shadow:var(--shadow);
+}
+.title-block h1{
+  font-family:"Fraunces", Georgia, serif;
+  font-weight:600;
+  font-size:clamp(30px,4.2vw,44px);
+  margin:0 0 4px;
+  text-wrap:balance;
+  letter-spacing:-.01em;
+}
+.title-block h1 em{
+  font-style:normal;
+  color:var(--select);
+}
+.title-block p{
+  margin:0;
+  color:var(--muted);
+  font-size:14.5px;
+  max-width:52ch;
+}
+.stats{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+}
+.stat{
+  background:var(--surface);
+  border:1px solid var(--ring);
+  border-radius:10px;
+  padding:8px 14px;
+  text-align:center;
+  box-shadow:var(--shadow);
+}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{display:block;font-size:12px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:2px}
+.stat.known b{color:var(--ok)}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin-bottom:22px;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--ring);
+}
+.chip{
+  border:1px solid var(--ring);
+  background:var(--surface);
+  color:var(--ink);
+  font:inherit;
+  font-size:15px;
+  padding:9px 16px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:background .18s ease, color .18s ease, border-color .18s ease, transform .15s ease, box-shadow .15s ease;
+  white-space:nowrap;
+}
+.chip:hover{border-color:var(--select);transform:translateY(-1px)}
+.chip:active{transform:translateY(0) scale(.96)}
+.chip[aria-pressed="true"]{
+  background:var(--select);
+  border-color:var(--select);
+  color:var(--select-ink);
+  font-weight:600;
+  box-shadow:0 3px 10px rgba(111,168,220,.4);
+  animation:pop .28s ease;
+}
+.spacer{flex:1}
+.tool-btn{
+  border:1px solid var(--ring);
+  background:var(--surface-2);
+  color:var(--ink);
+  font:inherit;
+  font-size:15px;
+  padding:9px 16px;
+  border-radius:10px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:border-color .18s ease, color .18s ease, transform .15s ease, box-shadow .15s ease;
+}
+.tool-btn:hover{border-color:var(--select);color:var(--select);transform:translateY(-1px);box-shadow:var(--shadow)}
+.tool-btn:active{transform:translateY(0) scale(.96)}
+
+@keyframes pop{
+  0%{transform:scale(.9)}
+  55%{transform:scale(1.06)}
+  100%{transform:scale(1)}
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));
+  gap:22px;
+}
+
+.card{
+  perspective:1200px;
+  height:250px;
+}
+.card-inner{
+  position:relative;
+  width:100%;
+  height:100%;
+  transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.4,.2,.2,1);
+  cursor:pointer;
+}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.card:focus-visible .card-inner{outline:2px solid var(--accent);outline-offset:3px;border-radius:14px}
+
+.face{
+  position:absolute;
+  inset:0;
+  border-radius:16px;
+  -webkit-backface-visibility:hidden;
+  backface-visibility:hidden;
+  display:flex;
+  flex-direction:column;
+  padding:24px 26px;
+  box-shadow:var(--shadow);
+}
+.face-front{
+  background:var(--surface);
+  border:1px solid var(--ring);
+  justify-content:space-between;
+}
+.face-back{
+  background:linear-gradient(155deg,var(--back),var(--back-2));
+  color:var(--back-text);
+  transform:rotateY(180deg);
+  justify-content:center;
+  text-align:left;
+  padding-bottom:60px;
+}
+
+.num{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:13px;
+  color:var(--accent);
+  font-weight:600;
+  letter-spacing:.03em;
+}
+.cat-tag{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.term{
+  font-family:"Fraunces", Georgia, serif;
+  font-weight:600;
+  line-height:1.22;
+  text-wrap:balance;
+  color:var(--ink);
+}
+.hint{
+  font-size:13px;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.def{
+  font-size:19px;
+  line-height:1.45;
+  overflow-y:auto;
+  overflow-wrap:anywhere;
+}
+.def code{
+  font-family:"IBM Plex Mono",monospace;
+  background:rgba(255,255,255,.14);
+  padding:2px 7px;
+  border-radius:5px;
+  font-size:18px;
+}
+.term sup, .def sup{
+  font-size:.6em;
+  line-height:0;
+  position:relative;
+  top:-.5em;
+  vertical-align:baseline;
+}
+.term sub, .def sub{
+  font-size:.65em;
+  line-height:0;
+  position:relative;
+  bottom:-.25em;
+  vertical-align:baseline;
+}
+.det{
+  display:inline-grid;
+  grid-template-columns:auto auto;
+  gap:0 .6em;
+  padding:0 .35em;
+  margin-left:.15em;
+  border-left:2px solid currentColor;
+  border-right:2px solid currentColor;
+  line-height:1.15;
+  vertical-align:middle;
+  text-align:center;
+}
+.markbar{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  display:flex;
+  gap:1px;
+}
+.markbtn{
+  flex:1;
+  border:none;
+  padding:12px 0 11px;
+  font:inherit;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:.02em;
+  cursor:pointer;
+  border-radius:0 0 0 0;
+  transition:filter .15s ease, transform .12s ease;
+}
+.markbtn:active{transform:scale(.95)}
+.markbtn.know{
+  background:rgba(111,207,154,.2);
+  color:#BFF0D6;
+  border-radius:0 0 0 13px;
+}
+.markbtn.dontknow{
+  background:rgba(122,178,240,.2);
+  color:#BFE0FF;
+  border-radius:0 0 13px 0;
+}
+.markbtn:hover{filter:brightness(1.15)}
+
+.card.known .face-front{border-color:var(--ok);box-shadow:var(--shadow), 0 0 0 1px var(--ok) inset}
+.card.known .num{color:var(--ok)}
+.card.known .face-front::after{
+  content:"✓ umím";
+  position:absolute;
+  top:14px; right:15px;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10px;
+  color:var(--ok);
+  background:var(--ok-bg);
+  padding:2px 7px;
+  border-radius:999px;
+}
+
+footer{
+  margin-top:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  color:var(--muted);
+  font-size:13px;
+}
+footer svg{
+  width:26px;
+  height:26px;
+  flex-shrink:0;
+  border-radius:50%;
+  opacity:.85;
+}
+
+@media (max-width:600px){
+  body{padding-inline:16px;padding-block:20px 32px}
+  .brand svg{width:40px;height:40px}
+  .title-block h1{font-size:28px}
+  #filterBar{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    margin-inline:-16px;
+    padding-inline:16px;
+    scrollbar-width:none;
+  }
+  #filterBar::-webkit-scrollbar{display:none}
+  .chip, .tool-btn{font-size:14px;padding:8px 14px}
+  .grid{gap:14px}
+  .card{height:230px}
+  .face{padding:18px 20px}
+  .face-back{padding-bottom:56px}
+  .def{font-size:17px}
+  .def code{font-size:16px}
+}
+  body p.kvinta { margin: 0 0 4px; max-width: none; color: #2F6FB5; font-size: 1.05rem; font-weight: 600; letter-spacing: .02em; }
+  :root[data-theme="dark"] .kvinta { color: #8CBDF2; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .kvinta { color: #8CBDF2; } }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+  <header class="page">
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="g-header" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c6df2"/>
+            <stop offset="100%" stop-color="#4338ca"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="url(#g-header)"/>
+        <path d="M14 40 Q32 18 50 40" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round"/>
+        <text x="32" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" fill="#ffffff" text-anchor="middle">SJ</text>
+      </svg>
+      <div class="title-block">
+        <p class="kvinta">Pro kvintu snadno a moderně</p>
+        <h1>Algebra: <em>124 karet</em> k zopakování</h1>
+        <p>Klikni na kartu a otoč ji. Vyber si okruh — pojmy i příklady k procvičení — zamíchej balíček nebo si označuj, co už umíš.</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="statTotal">30</b><span>zobrazeno</span></div>
+      <div class="stat known"><b id="statKnown">0</b><span>umím</span></div>
+    </div>
+  </header>
+
+  <div class="controls" id="filterBar"></div>
+
+  <div class="controls" style="border-bottom:none;padding-bottom:0;margin-bottom:18px;">
+    <button class="tool-btn" id="shuffleBtn">🔀 Zamíchat</button>
+    <button class="tool-btn" id="flipAllBtn">↺ Otočit vše zpět</button>
+    <div class="spacer"></div>
+    <button class="tool-btn" id="resetBtn">Vymazat pokrok</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="g-footer" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#7c6df2"/>
+          <stop offset="100%" stop-color="#4338ca"/>
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="30" fill="url(#g-footer)"/>
+      <path d="M14 40 Q32 18 50 40" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4" stroke-linecap="round"/>
+      <text x="32" y="42" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" fill="#ffffff" text-anchor="middle">SJ</text>
+    </svg>
+    <span>124 karet · pojmy z algebry · plus příklady na počítání, lineární a kvadratické rovnice, soustavy rovnic (i determinanty), mocniny, odmocniny, lineární funkce a práci se zlomky</span>
+  </footer>
+</div>
+
+<script>
+const DATA = [
+  {c:"Základy", t:"Proměnná", d:"Písmeno zastupující neznámé nebo proměnlivé číslo, např. <code>x</code>, <code>y</code>, <code>n</code>."},
+  {c:"Základy", t:"Konstanta", d:"Číslo, jehož hodnota se v daném výrazu nemění (např. 5 nebo π)."},
+  {c:"Základy", t:"Algebraický výraz", d:"Zápis spojující čísla, proměnné a operace, např. <code>3x + 5</code>."},
+  {c:"Základy", t:"Člen výrazu", d:"Část výrazu oddělená znaménkem + nebo −. Výraz <code>2x + 3y</code> má dva členy."},
+  {c:"Základy", t:"Koeficient", d:"Číslo stojící před proměnnou. Ve výrazu <code>5x</code> je koeficient 5."},
+  {c:"Mocniny a odmocniny", t:"Mocnina", d:"Zápis opakovaného násobení téhož čísla: <code>aⁿ = a·a·…·a</code> (n-krát)."},
+  {c:"Mocniny a odmocniny", t:"Základ mocniny", d:"Číslo, které se v mocnině násobí samo se sebou. V <code>a⁵</code> je základem a."},
+  {c:"Mocniny a odmocniny", t:"Exponent", d:"Číslo udávající, kolikrát se základ násobí sám sebou. V <code>a⁵</code> je exponentem 5."},
+  {c:"Mocniny a odmocniny", t:"Druhá odmocnina", d:"Nezáporné číslo, které po umocnění na druhou dá dané číslo: <code>√a</code>."},
+  {c:"Rovnice a nerovnice", t:"Rovnice", d:"Zápis rovnosti dvou výrazů obsahující neznámou, např. <code>2x + 1 = 7</code>."},
+  {c:"Rovnice a nerovnice", t:"Nerovnice", d:"Zápis vztahu mezi dvěma výrazy pomocí &lt;, &gt;, ≤ nebo ≥."},
+  {c:"Rovnice a nerovnice", t:"Řešení (kořen) rovnice", d:"Hodnota proměnné, po jejímž dosazení platí rovnost na obou stranách."},
+  {c:"Rovnice a nerovnice", t:"Lineární rovnice", d:"Rovnice, kde se neznámá vyskytuje v první mocnině, tvaru <code>ax + b = 0</code>."},
+  {c:"Rovnice a nerovnice", t:"Kvadratická rovnice", d:"Rovnice s neznámou ve druhé mocnině, tvaru <code>ax² + bx + c = 0</code>."},
+  {c:"Rovnice a nerovnice", t:"Ekvivalentní úpravy", d:"Úpravy rovnice (např. přičtení stejného čísla na obě strany), které nezmění množinu řešení."},
+  {c:"Rovnice a nerovnice", t:"Definiční obor", d:"Množina všech hodnot proměnné, pro které má výraz nebo rovnice smysl."},
+  {c:"Mnohočleny a vzorce", t:"Mnohočlen (polynom)", d:"Součet dvou nebo více jednočlenů, např. <code>3x² + 2x − 1</code>."},
+  {c:"Mnohočleny a vzorce", t:"Jednočlen (monom)", d:"Výraz tvořený součinem čísla a proměnných, např. <code>4x²y</code>."},
+  {c:"Mnohočleny a vzorce", t:"Dvojčlen (binom)", d:"Mnohočlen se dvěma členy, např. <code>a + b</code>."},
+  {c:"Mnohočleny a vzorce", t:"Vzorec (a + b)²", d:"Druhá mocnina součtu: <code>(a + b)² = a² + 2ab + b²</code>."},
+  {c:"Mnohočleny a vzorce", t:"Vzorec (a − b)²", d:"Druhá mocnina rozdílu: <code>(a − b)² = a² − 2ab + b²</code>."},
+  {c:"Mnohočleny a vzorce", t:"Vzorec a² − b²", d:"Rozdíl čtverců, rozklad na součin: <code>a² − b² = (a + b)(a − b)</code>."},
+  {c:"Mnohočleny a vzorce", t:"Rozklad na součin", d:"Vyjádření výrazu jako součinu jednodušších výrazů, např. pomocí vytýkání."},
+  {c:"Zákony a vlastnosti", t:"Komutativní zákon", d:"Pořadí sčítanců nebo činitelů nemění výsledek: <code>a + b = b + a</code>, <code>a·b = b·a</code>."},
+  {c:"Zákony a vlastnosti", t:"Asociativní zákon", d:"Způsob uzávorkování nemění výsledek: <code>(a + b) + c = a + (b + c)</code>."},
+  {c:"Zákony a vlastnosti", t:"Distributivní zákon", d:"Násobení součtu roznásobíme: <code>a·(b + c) = a·b + a·c</code>."},
+  {c:"Zákony a vlastnosti", t:"Absolutní hodnota", d:"Vzdálenost čísla od nuly na číselné ose, značí se <code>|a|</code> a je vždy nezáporná."},
+  {c:"Zlomky a poměry", t:"Zlomek", d:"Vyjádření podílu dvou čísel — čitatel děleno jmenovatel, např. <code>3/4</code>."},
+  {c:"Zlomky a poměry", t:"Poměr", d:"Porovnání dvou veličin zápisem <code>a : b</code>, např. rozdělení 200 Kč v poměru 3 : 2."},
+  {c:"Zlomky a poměry", t:"Přímá úměrnost", d:"Vztah <code>y = k·x</code>, kde k je konstanta úměrnosti — s rostoucím x roste i y."},
+  {c:"Zlomky a poměry", t:"Nepřímá úměrnost", d:"Vztah <code>y = k / x</code> — s rostoucím x hodnota y klesá."},
+  {c:"Mocniny a odmocniny", t:"Nulová mocnina", d:"Libovolné nenulové číslo umocněné na nultou je 1: <code>a⁰ = 1</code>."},
+  {c:"Mocniny a odmocniny", t:"Záporný exponent", d:"Záporný exponent znamená převrácenou hodnotu: <code>a⁻ⁿ = 1 / aⁿ</code>."},
+  {c:"Mocniny a odmocniny", t:"Mocnina součinu", d:"<code>(a·b)ⁿ = aⁿ · bⁿ</code> — umocňuje se každý činitel zvlášť."},
+  {c:"Mocniny a odmocniny", t:"Mocnina podílu", d:"<code>(a / b)ⁿ = aⁿ / bⁿ</code> — umocní se čitatel i jmenovatel."},
+  {c:"Mocniny a odmocniny", t:"Součin mocnin se stejným základem", d:"Exponenty se sčítají: <code>aᵐ · aⁿ = aᵐ⁺ⁿ</code>."},
+  {c:"Mocniny a odmocniny", t:"Podíl mocnin se stejným základem", d:"Exponenty se odčítají: <code>aᵐ : aⁿ = aᵐ⁻ⁿ</code>."},
+  {c:"Mocniny a odmocniny", t:"Mocnina mocniny", d:"Exponenty se násobí: <code>(aᵐ)ⁿ = aᵐ·ⁿ</code>."},
+  {c:"Mnohočleny a vzorce", t:"Podobné členy", d:"Členy se stejnou proměnnou a stejným exponentem, např. <code>3x²</code> a <code>−5x²</code>. Lze je sečíst."},
+  {c:"Mnohočleny a vzorce", t:"Sčítání mnohočlenů", d:"Sčítají se pouze podobné členy, ostatní se opíšou beze změny."},
+  {c:"Mnohočleny a vzorce", t:"Násobení mnohočlenů", d:"Každý člen prvního mnohočlenu se vynásobí každým členem druhého."},
+  {c:"Mnohočleny a vzorce", t:"Vytýkání", d:"Vyjmutí společného činitele před závorku, např. <code>ax + ay = a(x + y)</code>."},
+  {c:"Soustavy rovnic", t:"Soustava rovnic", d:"Dvě nebo více rovnic se stejnými neznámými, které řešíme současně."},
+  {c:"Soustavy rovnic", t:"Dosazovací metoda", d:"Z jedné rovnice vyjádříme neznámou a dosadíme ji do druhé rovnice."},
+  {c:"Soustavy rovnic", t:"Sčítací metoda", d:"Rovnice sečteme nebo odečteme tak, aby se jedna z neznámých vyloučila."},
+  {c:"Rovnice a nerovnice", t:"Diskriminant", d:"Výraz <code>D = b² − 4ac</code> určující počet řešení kvadratické rovnice."},
+  {c:"Rovnice a nerovnice", t:"Kořeny kvadratické rovnice", d:"Vzorec <code>x = (−b ± √D) / 2a</code> pro výpočet řešení."},
+  {c:"Funkce", t:"Funkce", d:"Předpis, který každému číslu x přiřadí právě jedno číslo y."},
+  {c:"Funkce", t:"Lineární funkce", d:"Funkce tvaru <code>y = ax + b</code>, jejímž grafem je přímka."},
+
+  {c:"Příklady: sčítání", t:"3x + 5x = ?", d:"<code>= 8x</code> — sečteme koeficienty u stejné proměnné, exponent zůstává."},
+  {c:"Příklady: sčítání", t:"(2x + 3) + (5x − 1) = ?", d:"<code>= 7x + 2</code> — sečteme podobné členy: 2x+5x a 3−1."},
+  {c:"Příklady: sčítání", t:"2a + 3b + 5a = ?", d:"<code>= 7a + 3b</code> — sčítáme jen členy se stejnou proměnnou (a s a), b osamotí."},
+
+  {c:"Příklady: odčítání", t:"9y − 4y = ?", d:"<code>= 5y</code> — odečteme koeficienty u stejné proměnné."},
+  {c:"Příklady: odčítání", t:"(4x² + 3x) − (x² + 5x) = ?", d:"<code>= 3x² − 2x</code> — odečteme podobné členy: 4x²−x² a 3x−5x."},
+  {c:"Příklady: odčítání", t:"7x − (2x + 3) = ?", d:"<code>= 5x − 3</code> — pozor, mínus před závorkou obrátí znaménka uvnitř."},
+
+  {c:"Příklady: násobení", t:"2x · 3x² = ?", d:"<code>= 6x³</code> — vynásobíme koeficienty (2·3) a sečteme exponenty (x¹·x²=x³)."},
+  {c:"Příklady: násobení", t:"4x(2x − 5) = ?", d:"<code>= 8x² − 20x</code> — roznásobíme závorku podle distributivního zákona."},
+  {c:"Příklady: násobení", t:"(x + 2)(x + 3) = ?", d:"<code>= x² + 5x + 6</code> — každý člen prvního násobíme každým členem druhého."},
+
+  {c:"Příklady: dělení", t:"x⁵ : x² = ?", d:"<code>= x³</code> — exponenty se u stejného základu odčítají (5−2)."},
+  {c:"Příklady: dělení", t:"(6x² + 9x) : 3x = ?", d:"<code>= 2x + 3</code> — dělíme 3x každý člen mnohočlenu zvlášť."},
+  {c:"Příklady: dělení", t:"12x⁴ : 4x = ?", d:"<code>= 3x³</code> — vydělíme koeficienty (12:4) a exponenty odečteme (4−1)."},
+
+  {c:"Příklady: mocnění mocnin", t:"(x³)⁴ = ?", d:"<code>= x¹²</code> — při mocnění mocniny se exponenty násobí (3·4)."},
+  {c:"Příklady: mocnění mocnin", t:"(2x²)³ = ?", d:"<code>= 8x⁶</code> — umocníme každý činitel: 2³=8 a (x²)³=x⁶."},
+  {c:"Příklady: mocnění mocnin", t:"(a²)⁵ · a = ?", d:"<code>= a¹¹</code> — nejprve (a²)⁵=a¹⁰, pak a¹⁰·a¹=a¹¹."},
+
+  {c:"Příklady: rovnice", t:"x + 5 = 12", d:"<code>x = 7</code> — od obou stran odečteme 5."},
+  {c:"Příklady: rovnice", t:"3x = 21", d:"<code>x = 7</code> — obě strany vydělíme 3."},
+  {c:"Příklady: rovnice", t:"2x + 3 = 11", d:"<code>x = 4</code> — odečteme 3, dostaneme 2x=8, pak dělíme 2."},
+  {c:"Příklady: rovnice", t:"5x − 4 = 16", d:"<code>x = 4</code> — přičteme 4 (5x=20), pak dělíme 5."},
+  {c:"Příklady: rovnice", t:"3x + 2 = x + 10", d:"<code>x = 4</code> — převedeme x na jednu stranu: 2x=8, x=4."},
+  {c:"Příklady: rovnice", t:"2(x + 3) = 16", d:"<code>x = 5</code> — roznásobíme závorku (2x+6=16), pak řešíme 2x=10."},
+  {c:"Příklady: rovnice", t:"x/2 + 3 = 7", d:"<code>x = 8</code> — odečteme 3 (x/2=4), pak vynásobíme 2."},
+  {c:"Příklady: kvadratické rovnice", t:"x² = 16", d:"<code>x = 4 nebo x = −4</code> — odmocníme obě strany, řešení jsou dvě."},
+  {c:"Příklady: kvadratické rovnice", t:"x² − 9 = 0", d:"<code>x = 3 nebo x = −3</code> — rozklad na (x−3)(x+3)=0."},
+  {c:"Příklady: kvadratické rovnice", t:"x² − 5x + 6 = 0", d:"<code>x = 2 nebo x = 3</code> — rozklad na (x−2)(x−3)=0."},
+  {c:"Příklady: kvadratické rovnice", t:"x² + 2x − 8 = 0", d:"<code>x = 2 nebo x = −4</code> — rozklad na (x−2)(x+4)=0."},
+  {c:"Příklady: kvadratické rovnice", t:"2x² − 8 = 0", d:"<code>x = 2 nebo x = −2</code> — chybí člen s x, stačí izolovat x²=4 a odmocnit."},
+  {c:"Příklady: kvadratické rovnice", t:"x² + 6x = 0", d:"<code>x = 0 nebo x = −6</code> — chybí absolutní člen, vytkneme x(x+6)=0."},
+  {c:"Příklady: kvadratické rovnice", t:"x² − 4x + 4 = 0", d:"<code>x = 2</code> — dvojnásobný kořen, protože (x−2)²=0."},
+  {c:"Příklady: kvadratické rovnice", t:"x² − 3x + 2 = 0: urči diskriminant", d:"<code>D = 1</code> — dosadíme do D=b²−4ac: (−3)²−4·1·2 = 9−8."},
+  {c:"Příklady: kvadratické rovnice", t:"x² + x − 6 = 0", d:"<code>x = 2 nebo x = −3</code> — rozklad na (x−2)(x+3)=0."},
+  {c:"Příklady: kvadratické rovnice", t:"x² + 4 = 0", d:"<code>nemá řešení v reálných číslech</code> — diskriminant D=−16 je záporný."},
+  {c:"Příklady: kvadratické rovnice", t:"x² − 2x − 3 = 0", d:"<code>x = 3 nebo x = −1</code> — rozklad na (x−3)(x+1)=0."},
+  {c:"Příklady: soustavy rovnic", t:"x + y = 5, x − y = 1", d:"<code>x = 3, y = 2</code> — sečtením rovnic vyjde 2x=6, pak dopočítáme y."},
+
+  {c:"Aritmetický základ: zlomky", t:"1/2 + 1/3 = ?", d:"<code>= 5/6</code> — převedeme na společný jmenovatel 6: 3/6 + 2/6."},
+  {c:"Aritmetický základ: zlomky", t:"3/4 − 1/4 = ?", d:"<code>= 1/2</code> — jmenovatel je stejný, odečteme čitatele a zkrátíme 2/4."},
+  {c:"Aritmetický základ: zlomky", t:"2/3 + 1/6 = ?", d:"<code>= 5/6</code> — společný jmenovatel 6: 4/6 + 1/6."},
+  {c:"Aritmetický základ: zlomky", t:"5/6 − 1/3 = ?", d:"<code>= 1/2</code> — společný jmenovatel 6: 5/6 − 2/6 = 3/6, po zkrácení 1/2."},
+  {c:"Aritmetický základ: zlomky", t:"2/3 · 3/4 = ?", d:"<code>= 1/2</code> — vynásobíme čitatele i jmenovatele (6/12) a zkrátíme."},
+  {c:"Aritmetický základ: zlomky", t:"1/2 : 1/4 = ?", d:"<code>= 2</code> — dělení zlomkem nahradíme násobením převrácenou hodnotou: 1/2 · 4/1."},
+  {c:"Aritmetický základ: zlomky", t:"3/5 : 2/5 = ?", d:"<code>= 3/2</code> — vynásobíme první zlomek převrácenou hodnotou druhého."},
+  {c:"Aritmetický základ: zlomky", t:"Zkrať zlomek 8/12", d:"<code>= 2/3</code> — čitatele i jmenovatele vydělíme jejich největším společným dělitelem (4)."},
+  {c:"Aritmetický základ: zlomky", t:"Rozšiř 2/3 na dvanáctiny", d:"<code>= 8/12</code> — čitatele i jmenovatele vynásobíme čtyřmi."},
+  {c:"Aritmetický základ: zlomky", t:"Zapiš 1 ½ jako zlomek", d:"<code>= 3/2</code> — celé číslo vynásobíme jmenovatelem a přičteme čitatele: (1·2+1)/2."},
+
+  {c:"Příklady: mocniny a odmocniny", t:"2³ = ?", d:"<code>= 8</code> — 2·2·2 = 8."},
+  {c:"Příklady: mocniny a odmocniny", t:"5² = ?", d:"<code>= 25</code> — 5·5 = 25."},
+  {c:"Příklady: mocniny a odmocniny", t:"10⁴ = ?", d:"<code>= 10 000</code> — počet nul odpovídá exponentu."},
+  {c:"Příklady: mocniny a odmocniny", t:"(−3)² = ?", d:"<code>= 9</code> — záporné číslo v sudé mocnině dá kladný výsledek."},
+  {c:"Příklady: mocniny a odmocniny", t:"(−2)³ = ?", d:"<code>= −8</code> — záporné číslo v liché mocnině zůstává záporné."},
+  {c:"Příklady: mocniny a odmocniny", t:"3⁰ = ?", d:"<code>= 1</code> — jakékoli nenulové číslo na nulté je 1."},
+  {c:"Příklady: mocniny a odmocniny", t:"2⁻² = ?", d:"<code>= 1/4</code> — záporný exponent znamená převrácenou hodnotu: 1/2²."},
+  {c:"Příklady: mocniny a odmocniny", t:"√16 = ?", d:"<code>= 4</code> — protože 4² = 16."},
+  {c:"Příklady: mocniny a odmocniny", t:"√81 = ?", d:"<code>= 9</code> — protože 9² = 81."},
+  {c:"Příklady: mocniny a odmocniny", t:"∛8 = ?", d:"<code>= 2</code> — třetí odmocnina hledá číslo, které umocněné na 3 dá 8: 2³ = 8."},
+
+  {c:"Příklady: lineární funkce", t:"y = 3x − 2: urči a, b", d:"<code>a = 3, b = −2</code> — a je směrnice (sklon), b je posun na ose y."},
+  {c:"Příklady: lineární funkce", t:"f(x) = 2x + 1, f(3) = ?", d:"<code>= 7</code> — dosadíme x=3: 2·3+1=7."},
+  {c:"Příklady: lineární funkce", t:"f(x) = −x + 4, f(0) = ?", d:"<code>= 4</code> — dosazením x=0 dostaneme průsečík s osou y."},
+  {c:"Příklady: lineární funkce", t:"Najdi nulový bod: y = 2x − 6", d:"<code>x = 3</code> — položíme 2x−6=0, tedy 2x=6."},
+  {c:"Příklady: lineární funkce", t:"y = −3x + 1: rostoucí, nebo klesající?", d:"<code>klesající</code> — koeficient a je záporný (a = −3 < 0)."},
+  {c:"Příklady: lineární funkce", t:"y = 5x: rostoucí, nebo klesající?", d:"<code>rostoucí</code> — koeficient a je kladný (a = 5 > 0)."},
+  {c:"Příklady: lineární funkce", t:"Přímka body [0,2] a [1,5]: rovnice?", d:"<code>y = 3x + 2</code> — sklon a=(5−2)/(1−0)=3, b odečteme z bodu [0,2]."},
+  {c:"Příklady: lineární funkce", t:"f(x) = 4x − 3, pro které x je f(x) = 9?", d:"<code>x = 3</code> — řešíme 4x−3=9, tedy 4x=12."},
+  {c:"Příklady: lineární funkce", t:"Průsečík s osou x: y = x − 5", d:"<code>[5, 0]</code> — dosadíme y=0 a řešíme x−5=0."},
+  {c:"Příklady: lineární funkce", t:"Průsečík s osou y: y = −2x + 7", d:"<code>[0, 7]</code> — dosadíme x=0, hodnota b udává přímo průsečík."},
+
+  {c:"Soustavy rovnic", t:"Determinant 2. řádu", d:"Číslo přiřazené tabulce 2×2: součin na hlavní diagonále minus součin na vedlejší, <code>a·d − b·c</code>."},
+  {c:"Soustavy rovnic", t:"Determinant soustavy D", d:"Počítá se z koeficientů u neznámých: pro a₁x + b₁y = c₁, a₂x + b₂y = c₂ je <code>D = a₁b₂ − a₂b₁</code>."},
+  {c:"Soustavy rovnic", t:"Determinanty Dx a Dy", th:"Determinanty D<sub>x</sub> a D<sub>y</sub>", d:"Sloupec u x (u y) nahradíme pravými stranami: <code>D<sub>x</sub> = c₁b₂ − c₂b₁</code>, <code>D<sub>y</sub> = a₁c₂ − a₂c₁</code>."},
+  {c:"Soustavy rovnic", t:"Cramerovo pravidlo", d:"Je-li D ≠ 0, má soustava jediné řešení: <code>x = D<sub>x</sub> / D</code>, <code>y = D<sub>y</sub> / D</code>."},
+  {c:"Soustavy rovnic", t:"Počet řešení podle D", d:"<code>D ≠ 0</code> → jedno řešení. <code>D = 0</code> → žádné řešení, nebo nekonečně mnoho (když i D<sub>x</sub> = D<sub>y</sub> = 0)."},
+
+  {c:"Příklady: soustavy rovnic", t:"Vypočítej determinant |3 2; 1 4|", th:'Vypočítej <span class="det"><span>3</span><span>2</span><span>1</span><span>4</span></span>', d:"<code>= 10</code> — hlavní diagonála minus vedlejší: 3·4 − 2·1 = 12 − 2."},
+  {c:"Příklady: soustavy rovnic", t:"Determinanty: 2x + y = 7, x − y = 2", d:"<code>x = 3, y = 1</code> — D = −3, D<sub>x</sub> = −9, D<sub>y</sub> = −3, tedy x = −9 / −3, y = −3 / −3."},
+  {c:"Příklady: soustavy rovnic", t:"Determinanty: 2x − 3y = 1, 4x + y = 9", d:"<code>x = 2, y = 1</code> — D = 2·1 − (−3)·4 = 14, D<sub>x</sub> = 28, D<sub>y</sub> = 14."},
+  {c:"Příklady: soustavy rovnic", t:"Determinanty: 3x + 2y = 12, x − y = −1", d:"<code>x = 2, y = 3</code> — D = −5, D<sub>x</sub> = −10, D<sub>y</sub> = −15."},
+  {c:"Příklady: soustavy rovnic", t:"Determinanty: x + 2y = 3, 2x + 4y = 5", d:"<code>nemá řešení</code> — D = 1·4 − 2·2 = 0, ale D<sub>x</sub> = 3·4 − 2·5 = 2 ≠ 0."},
+  {c:"Příklady: soustavy rovnic", t:"Determinanty: x + y = 2, 2x + 2y = 4", d:"<code>nekonečně mnoho řešení</code> — D = 0 a také D<sub>x</sub> = D<sub>y</sub> = 0 (druhá rovnice je dvojnásobek první)."},
+];
+
+const grid = document.getElementById('grid');
+const filterBar = document.getElementById('filterBar');
+const statTotal = document.getElementById('statTotal');
+const statKnown = document.getElementById('statKnown');
+
+let known = new Set();
+try{
+  const saved = JSON.parse(localStorage.getItem('algebra-known') || '[]');
+  known = new Set(saved);
+}catch(e){}
+
+function saveKnown(){
+  try{ localStorage.setItem('algebra-known', JSON.stringify([...known])); }catch(e){}
+}
+
+const SUP_MAP = {'⁰':'0','¹':'1','²':'2','³':'3','⁴':'4','⁵':'5','⁶':'6','⁷':'7','⁸':'8','⁹':'9','⁻':'−','⁺':'+','ᵐ':'m','ⁿ':'n'};
+function supify(str){
+  return str.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺ᵐⁿ]+/g, run => '<sup>' + [...run].map(ch=>SUP_MAP[ch]).join('') + '</sup>');
+}
+
+function termFontSize(text){
+  const max=31, min=18, startShrink=12, endShrink=34;
+  const len = text.length;
+  if(len<=startShrink) return max;
+  if(len>=endShrink) return min;
+  const t = (len-startShrink)/(endShrink-startShrink);
+  return Math.round(max - t*(max-min));
+}
+
+let order = DATA.map((_,i)=>i);
+let activeCat = "Vše";
+
+const cats = ["Vše", ...new Set(DATA.map(d=>d.c))];
+
+function renderFilters(){
+  filterBar.innerHTML = '';
+  cats.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className = 'chip';
+    btn.textContent = cat;
+    btn.setAttribute('aria-pressed', cat===activeCat ? 'true':'false');
+    btn.addEventListener('click', ()=>{
+      activeCat = cat;
+      [...filterBar.children].forEach(c=>c.setAttribute('aria-pressed', c===btn ? 'true':'false'));
+      renderGrid();
+    });
+    filterBar.appendChild(btn);
+  });
+}
+
+function renderGrid(){
+  grid.innerHTML = '';
+  const indices = order.filter(i => activeCat==="Vše" || DATA[i].c === activeCat);
+  statTotal.textContent = indices.length;
+  let knownVisible = 0;
+
+  indices.forEach(i=>{
+    const item = DATA[i];
+    const isKnown = known.has(i);
+    if(isKnown) knownVisible++;
+
+    const card = document.createElement('div');
+    card.className = 'card' + (isKnown ? ' known':'');
+    card.tabIndex = 0;
+    card.setAttribute('role','button');
+    card.setAttribute('aria-label', 'Kartička: ' + item.t);
+
+    card.innerHTML = `
+      <div class="card-inner">
+        <div class="face face-front">
+          <div class="hint"><span class="cat-tag">${item.c}</span><span class="num">#${String(i+1).padStart(2,'0')}</span></div>
+          <div class="term" style="font-size:${termFontSize(item.t)}px">${supify(item.th || item.t)}</div>
+          <div class="hint"><span>klikni pro odpověď</span><span>→</span></div>
+        </div>
+        <div class="face face-back">
+          <div class="def">${supify(item.d)}</div>
+          <div class="markbar">
+            <button class="markbtn dontknow" type="button">✗ neumím</button>
+            <button class="markbtn know" type="button">✓ umím</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const toggleFlip = (e)=>{
+      if(e.target.closest('.markbtn')) return;
+      card.classList.toggle('flipped');
+    };
+    card.addEventListener('click', toggleFlip);
+    card.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' || e.key===' '){ e.preventDefault(); card.classList.toggle('flipped'); }
+    });
+
+    card.querySelector('.know').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      known.add(i);
+      saveKnown();
+      renderGrid();
+    });
+    card.querySelector('.dontknow').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      known.delete(i);
+      saveKnown();
+      renderGrid();
+    });
+
+    grid.appendChild(card);
+  });
+
+  statKnown.textContent = knownVisible;
+}
+
+document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+  for(let i=order.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [order[i],order[j]] = [order[j],order[i]];
+  }
+  renderGrid();
+});
+
+document.getElementById('flipAllBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('.card.flipped').forEach(c=>c.classList.remove('flipped'));
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  known = new Set();
+  saveKnown();
+  renderGrid();
+});
+
+renderFilters();
+renderGrid();
+</script>
